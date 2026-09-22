@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooking Together | آشپزخانه مشارکتی</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        * { font-family: 'Tahoma', sans-serif; }
+        .star { cursor: pointer; font-size: 28px; color: #d1d5db; transition: 0.2s; }
+        .star.active { color: #d48803; }
+        .task-item { background: #fef3c7; padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid #ea580c; }
+        .task-group { background: #fff7ed; padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 2px solid #fdba74; }
+        .task-group-title { font-size: 18px; font-weight: bold; color: #ea580c; margin-bottom: 10px; }
+        .exp-card { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+        .animate-fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .team-badge { display: inline-block; background: #fef3c7; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin: 2px 4px; }
+    </style>
+</head>
+<body class="bg-pink-100 min-h-screen">
+
+<!--  هدر -->
+<header class="bg-green-800 text-white p-4 shadow-md flex flex-wrap justify-between items-center px-6 md:px-12">
+    <div class="flex flex-wrap gap-3">
+        <button onclick="clearAllTasks()" class="bg-red-500 hover:bg-red-700 px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition">
+            <i class="fas fa-trash"></i> حذف کارها
+        </button>
+        <button onclick="clearAllExperiences()" class="bg-red-500 hover:bg-red-700 px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition">
+            <i class="fas fa-trash"></i> حذف تجربیات
+        </button>
+    </div>
+    <div class="text-right mt-2 md:mt-0">
+        <h1 class="text-2xl font-bold">Cooking Together <i class="fas fa-utensils ml-2"></i></h1>
+        <p class="text-xs  font-bold  text-black-800 mt-1">آشپزخانه مشارکتی - با هم بپزیم، با هم لذت ببریم</p>
+    </div>
+</header>
+
+<!--  بخش 1: تقسیم کارها  -->
+<div class="container mx-auto mt-8 p-4">
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-blue-900 flex justify-center items-center gap-3">
+            <i class="fas fa-users text-blue-600"></i> همکاری گروهی - تقسیم کارها
+        </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- لیست کارها -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-orange-500">
+            <h3 class="text-xl font-bold text-blue-900 mb-6 flex items-center gap-2">
+                <i class="fas fa-list-ul"></i> لیست کارها
+                <span id="taskCount" class="bg-orange-100 text-blue-900 text-sm px-3 py-1 rounded-full">0</span>
+            </h3>
+            <div id="taskList" class="space-y-4 max-h-96 overflow-y-auto">
+                <p class="text-gray-400 text-center italic py-4">هنوز کاری ثبت نشده است...</p>
+            </div>
+        </div>
+
+        <!-- فرم اضافه کردن کار -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-orange-500">
+            <h3 class="text-xl font-bold text-blue-900 mb-6 flex items-center justify-between">
+                <span>اضافه کردن کار جدید</span>
+                <i class="fas fa-plus-circle text-blue-900"></i>
+            </h3>
+
+            <form id="taskForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">نام غذا/پروژه:</label>
+                    <input type="text" id="projectName" placeholder="مثلاً: منتو" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">عنوان کار:</label>
+                    <input type="text" id="taskTitle" placeholder="مثلاً: خمیر آماده کردن" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">نام شخص مسئول:</label>
+                    <input type="text" id="assignee" placeholder="مثلاً: علی" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg">
+                        <i class="fas fa-save"></i> ثبت کار
+                    </button>
+                    <button type="button" onclick="addAnotherTask()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg">
+                        <i class="fas fa-plus"></i> کار دیگر
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400 text-center">با کلیک روی "کار دیگر" می‌توانید برای همان غذا، کار جدید اضافه کنید</p>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--  بخش 2: تماس تصویری  -->
+<div class="max-w-6xl mx-auto px-4">
+    <div class="flex justify-center items-center gap-2 text-blue-900 text-2xl font-bold my-8">
+        <span>📷 تماس تصویری</span>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <div class="flex flex-col items-center justify-center text-center space-y-6 border-l-0 md:border-l border-gray-100 pb-8 md:pb-0">
+                <h2 class="text-xl font-bold text-gray-800">راهنمای تماس گروهی</h2>
+                <div class="text-orange-500 text-6xl">
+                    <i class="fas fa-users"></i>
+                </div>
+                <p class="text-gray-500 text-sm">برای تماس گروهی می‌توانید از نرم‌افزارهای زیر استفاده کنید:</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <a href="whatsapp://send" class="inline-block">
+                        <button class="bg-green-500 text-white px-4 py-1.5 rounded-full text-sm hover:bg-green-600 transition">WhatsApp</button>
+                    </a>
+                    <a href="zoommtg://zoom.us/join" class="inline-block">
+                        <button class="bg-blue-600 text-white px-4 py-1.5 rounded-full text-sm hover:bg-blue-700 transition">Zoom</button>
+                    </a>
+                    <a href="https://meet.google.com" target="_blank" class="inline-block">
+                        <button class="bg-blue-500 text-white px-4 py-1.5 rounded-full text-sm hover:bg-blue-600 transition">Google Meet</button>
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center space-y-4">
+                <h2 class="text-xl font-bold text-gray-800">دوربین شما</h2>
+                <div class="w-full aspect-video bg-black rounded-xl overflow-hidden relative border-4 border-gray-100">
+                    <video id="webcam" autoplay playsinline class="w-full h-full object-cover"></video>
+                    <div id="placeholder" class="absolute inset-0 flex items-center justify-center text-gray-400 bg-black/50 text-white text-sm">دوربین غیرفعال است</div>
+                </div>
+                <div class="flex gap-4 w-full">
+                    <button onclick="startCamera()" class="flex-1 bg-green-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-green-600 transition">
+                        <i class="fas fa-camera"></i> شروع
+                    </button>
+                    <button onclick="stopCamera()" class="flex-1 bg-red-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-red-600 transition">
+                        <i class="fas fa-stop"></i> توقف
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!--  بخش 3: تجربیات کاربران  -->
+<div class="bg-green-800 text-white p-4 shadow-md text-center mt-8">
+    <h1 class="text-2xl font-bold"> تجربیات آشپزی کاربران</h1>
+</div>
+
+<div class="container mx-auto p-4 max-w-4xl">
+
+    <div class="bg-white rounded-xl shadow p-5 mb-6">
+        <h2 class="text-xl font-bold text-blue-900 mb-4 text-center">📝 ثبت تجربه جدید</h2>
+
+        <div class="grid md:grid-cols-2 gap-3 mb-3">
+            <input type="text" id="userName" placeholder="نام کاربری *" class="p-2 border rounded">
+            <input type="number" id="userAge" placeholder="سن" class="p-2 border rounded">
+            <input type="text" id="userPhone" placeholder="شماره تماس" class="p-2 border rounded">
+            <input type="text" id="foodNameExp" placeholder="نام غذا *" class="p-2 border rounded">
+        </div>
+
+        <div class="mb-3">
+            <label class="block text-sm font-bold text-gray-600 mb-1">📸 عکس غذا (اختیاری):</label>
+            <input type="file" id="foodImage" accept="image/*" class="w-full p-1 border rounded text-sm">
+            <div id="imagePreview" class="mt-2 hidden">
+                <img id="previewImg" class="h-16 w-16 object-cover rounded border">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 mb-3">
+            <span class="text-sm font-bold text-gray-600">⭐ امتیاز شما:</span>
+            <div id="starBox" class="flex gap-1">
+                <span class="star" data-val="1">★</span>
+                <span class="star" data-val="2">★</span>
+                <span class="star" data-val="3">★</span>
+                <span class="star" data-val="4">★</span>
+                <span class="star" data-val="5">★</span>
+            </div>
+        </div>
+
+        <textarea id="experience" rows="3" placeholder="تجربه خود را بنویسید..." class="w-full p-2 border rounded mb-3"></textarea>
+
+        <div class="flex flex-wrap gap-3">
+            <button id="saveExpBtn" class="bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700"><i class="fas fa-save ml-1"></i> ذخیره</button>
+            <button id="clearFormBtn" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"><i class="fas fa-eraser ml-1"></i> پاک کردن</button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <h2 class="text-xl font-bold text-blue-900 mb-4 text-center">📋 لیست تجربیات</h2>
+
+        <div class="flex flex-wrap gap-3 mb-4">
+            <input type="text" id="searchInput" placeholder="🔍 جستجو در نام غذا..." class="flex-1 p-2 border rounded">
+            <select id="filterSelect" class="p-2 border rounded bg-white">
+                <option value="all">همه امتیازها</option>
+                <option value="5">فقط ۵ ستاره</option>
+                <option value="4">۴ ستاره و بیشتر</option>
+                <option value="3">۳ ستاره و بیشتر</option>
+            </select>
+        </div>
+
+        <div id="expList" class="max-h-96 overflow-y-auto">
+            <p class="text-gray-400 text-center py-4">هنوز تجربه‌ای ثبت نشده است</p>
+        </div>
+    </div>
+
+</div>
+
+<footer class="text-center py-4 text-gray-500 text-sm border-t mt-8">
+    <p>🍴 Cooking Together - آشپزخانه مشارکتی افغانی 🍴</p>
+</footer>
+
+<script>
+// بخش 1: تقسیم کارها 
+var taskList = document.getElementById('taskList');
+var taskCount = document.getElementById('taskCount');
+
+// ذخیره کارها در یک آرایه
+var allTasks = [];
+
+function updateTaskCount() {
+    taskCount.textContent = allTasks.length;
+    if (allTasks.length === 0) {
+        taskList.innerHTML = '<p class="text-gray-400 text-center italic py-4">هنوز کاری ثبت نشده است...</p>';
+    }
+}
+
+function renderAllTasks() {
+    if (allTasks.length === 0) {
+        taskList.innerHTML = '<p class="text-gray-400 text-center italic py-4">هنوز کاری ثبت نشده است...</p>';
+        return;
+    }
+
+    var html = "";
+    for (var i = 0; i < allTasks.length; i++) {
+        var t = allTasks[i];
+        html += `
+            <div class="task-item animate-fade-in">
+                <div>
+                    <h4 class="font-bold text-orange-900">🍲 ${t.project}</h4>
+                    <p class="text-sm text-gray-700">${t.task} - <span class="text-orange-600 font-medium">${t.person}</span></p>
+                </div>
+                <button onclick="removeTask(${i})" class="text-red-400 hover:text-red-600 text-xl">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+        `;
+    }
+    taskList.innerHTML = html;
+    updateTaskCount();
+}
+
+function removeTask(index) {
+    if (confirm("آیا از حذف این کار مطمئن هستید؟")) {
+        allTasks.splice(index, 1);
+        renderAllTasks();
+    }
+}
+
+function clearAllTasks() {
+    if (confirm("آیا از حذف تمام کارها مطمئن هستید؟")) {
+        allTasks = [];
+        renderAllTasks();
+    }
+}
+
+// ثبت کار جدید 
+function addNewTask(project, task, person) {
+    allTasks.push({
+        project: project,
+        task: task,
+        person: person
+    });
+    renderAllTasks();
+}
+
+// رویداد ثبت فرم
+document.getElementById('taskForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var project = document.getElementById('projectName').value.trim();
+    var task = document.getElementById('taskTitle').value.trim();
+    var person = document.getElementById('assignee').value.trim();
+    
+    if (!project) { alert("لطفاً نام غذا را وارد کنید!"); return; }
+    if (!task) { alert("لطفاً عنوان کار را وارد کنید!"); return; }
+    if (!person) { alert("لطفاً نام شخص مسئول را وارد کنید!"); return; }
+    
+    addNewTask(project, task, person);
+    document.getElementById('taskTitle').value = "";
+    document.getElementById('assignee').value = "";
+    document.getElementById('taskTitle').focus();
+});
+
+// دکمه "کار دیگر"
+function addAnotherTask() {
+    var project = document.getElementById('projectName').value.trim();
+    var task = document.getElementById('taskTitle').value.trim();
+    var person = document.getElementById('assignee').value.trim();
+    
+    if (!project) { alert("لطفاً نام غذا را وارد کنید!"); return; }
+    if (!task) { alert("لطفاً عنوان کار را وارد کنید!"); return; }
+    if (!person) { alert("لطفاً نام شخص مسئول را وارد کنید!"); return; }
+    
+    addNewTask(project, task, person);
+    document.getElementById('taskTitle').value = "";
+    document.getElementById('assignee').value = "";
+    document.getElementById('taskTitle').focus();
+}
+
+//  بخش 2: دوربین 
+var video = document.getElementById('webcam');
+var placeholder = document.getElementById('placeholder');
+var stream = null;
+
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        placeholder.classList.add('hidden');
+    } catch (err) {
+        alert("خطا در دسترسی به دوربین: " + err.message);
+    }
+}
+
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(function(track) { track.stop(); });
+        video.srcObject = null;
+        placeholder.classList.remove('hidden');
+    }
+}
+
+//  بخش 3: تجربیات کاربران 
+var experiences = [];
+var selectedRating = 0;
+var currentImageBase64 = "";
+
+function saveToLocal() {
+    localStorage.setItem("cooking_experiences", JSON.stringify(experiences));
+}
+
+function loadFromLocal() {
+    var saved = localStorage.getItem("cooking_experiences");
+    if (saved) {
+        experiences = JSON.parse(saved);
+    } else {
+        experiences = [];
+    }
+    renderList();
+}
+
+// آپلود عکس
+document.getElementById("foodImage").addEventListener("change", function(e) {
+    var file = e.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            currentImageBase64 = event.target.result;
+            var preview = document.getElementById("imagePreview");
+            var img = document.getElementById("previewImg");
+            img.src = currentImageBase64;
+            preview.classList.remove("hidden");
+        };
+        reader.readAsDataURL(file);
+    } else {
+        currentImageBase64 = "";
+        document.getElementById("imagePreview").classList.add("hidden");
+    }
+});
+
+// ستاره‌ها
+function initStars() {
+    var stars = document.querySelectorAll("#starBox .star");
+    for (var i = 0; i < stars.length; i++) {
+        stars[i].onclick = function() {
+            selectedRating = parseInt(this.getAttribute("data-val"));
+            var allStars = document.querySelectorAll("#starBox .star");
+            for (var j = 0; j < allStars.length; j++) {
+                var val = parseInt(allStars[j].getAttribute("data-val"));
+                if (val <= selectedRating) {
+                    allStars[j].classList.add("active");
+                } else {
+                    allStars[j].classList.remove("active");
+                }
+            }
+        };
+    }
+}
+
+function resetStars() {
+    selectedRating = 0;
+    var stars = document.querySelectorAll("#starBox .star");
+    for (var i = 0; i < stars.length; i++) {
+        stars[i].classList.remove("active");
+    }
+}
+
+function clearForm() {
+    document.getElementById("userName").value = "";
+    document.getElementById("userAge").value = "";
+    document.getElementById("userPhone").value = "";
+    document.getElementById("foodNameExp").value = "";
+    document.getElementById("experience").value = "";
+    document.getElementById("foodImage").value = "";
+    currentImageBase64 = "";
+    document.getElementById("imagePreview").classList.add("hidden");
+    resetStars();
+}
+
+function addExperience() {
+    var name = document.getElementById("userName").value.trim();
+    var age = document.getElementById("userAge").value;
+    var phone = document.getElementById("userPhone").value;
+    var food = document.getElementById("foodNameExp").value.trim();
+    var comment = document.getElementById("experience").value.trim();
+
+    if (name === "") { alert("لطفاً نام کاربری را وارد کنید"); return; }
+    if (food === "") { alert("لطفاً نام غذا را وارد کنید"); return; }
+    if (comment === "") { alert("لطفاً متن تجربه را وارد کنید"); return; }
+    if (selectedRating === 0) { alert("لطفاً امتیاز دهید"); return; }
+
+    var newExp = {
+        id: Date.now(),
+        name: name,
+        age: age || "نامشخص",
+        phone: phone || "",
+        food: food,
+        rating: selectedRating,
+        comment: comment,
+        image: currentImageBase64 || "",
+        date: new Date().toLocaleDateString("fa-IR")
+    };
+
+    experiences.unshift(newExp);
+    saveToLocal();
+    renderList();
+    clearForm();
+    alert("✅ تجربه شما با موفقیت ثبت شد!");
+}
+
+function deleteExp(id) {
+    if (confirm("آیا از حذف این تجربه مطمئن هستید؟")) {
+        var newExperiences = [];
+        for (var i = 0; i < experiences.length; i++) {
+            if (experiences[i].id !== id) {
+                newExperiences.push(experiences[i]);
+            }
+        }
+        experiences = newExperiences;
+        saveToLocal();
+        renderList();
+        alert("✅ تجربه حذف شد!");
+    }
+}
+
+function clearAllExperiences() {
+    if (confirm("آیا از حذف تمام تجربیات مطمئن هستید؟")) {
+        experiences = [];
+        saveToLocal();
+        renderList();
+        alert("✅ تمام تجربیات حذف شد!");
+    }
+}
+
+function renderList() {
+    var searchWord = document.getElementById("searchInput").value.toLowerCase();
+    var filterVal = document.getElementById("filterSelect").value;
+
+    var filtered = [];
+    for (var i = 0; i < experiences.length; i++) {
+        var e = experiences[i];
+        var matchSearch = true;
+        var matchFilter = true;
+
+        if (searchWord !== "") {
+            if (e.food.toLowerCase().indexOf(searchWord) === -1) {
+                matchSearch = false;
+            }
+        }
+
+        if (filterVal !== "all") {
+            var minRating = parseInt(filterVal);
+            if (e.rating < minRating) {
+                matchFilter = false;
+            }
+        }
+
+        if (matchSearch && matchFilter) {
+            filtered.push(e);
+        }
+    }
+
+    var container = document.getElementById("expList");
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-4">هیچ تجربه‌ای یافت نشد</p>';
+        return;
+    }
+
+    var html = "";
+    for (var i = 0; i < filtered.length; i++) {
+        var e = filtered[i];
+
+        var starsHtml = "";
+        for (var s = 1; s <= 5; s++) {
+            if (s <= e.rating) {
+                starsHtml += '<i class="fas fa-star text-amber-500 text-sm"></i>';
+            } else {
+                starsHtml += '<i class="far fa-star text-gray-300 text-sm"></i>';
+            }
+        }
+
+        var imageHtml = "";
+        if (e.image && e.image !== "") {
+            imageHtml = '<img src="' + e.image + '" class="w-16 h-16 object-cover rounded-lg border mt-2">';
+        }
+
+        html += '<div class="exp-card">';
+        html += '<div class="flex justify-between flex-wrap gap-2">';
+        html += '<div><span class="font-bold text-orange-700 text-lg">' + e.name + '</span>';
+        html += '<span class="text-xs text-gray-500"> (' + e.age + ' سال)</span>';
+        if (e.phone) {
+            html += '<span class="text-xs text-gray-500 mr-2">📞 ' + e.phone + '</span>';
+        }
+        html += '</div>';
+        html += '<span class="text-xs bg-orange-100 px-2 py-1 rounded-full">🍲 ' + e.food + '</span>';
+        html += '</div>';
+        html += '<div class="flex gap-1 my-2">' + starsHtml + '</div>';
+        html += '<p class="text-gray-700 text-sm mt-1">' + e.comment + '</p>';
+        html += '<div class="flex justify-between items-center mt-2">';
+        html += '<div class="flex items-center gap-2">' + imageHtml + '<span class="text-xs text-gray-400">📅 ' + e.date + '</span></div>';
+        html += '<button onclick="deleteExp(' + e.id + ')" class="text-red-500 text-sm hover:text-red-700">🗑️ حذف</button>';
+        html += '</div></div>';
+    }
+    container.innerHTML = html;
+}
+
+// رویدادها
+document.getElementById("saveExpBtn").onclick = addExperience;
+document.getElementById("clearFormBtn").onclick = clearForm;
+document.getElementById("searchInput").oninput = renderList;
+document.getElementById("filterSelect").onchange = renderList;
+
+loadFromLocal();
+initStars();
+</script>
+</body>
+</html>
